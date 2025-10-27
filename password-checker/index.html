@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Password Strength Checker</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .container {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        max-width: 900px;
+        width: 100%;
+        overflow: hidden;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+      }
+
+      .header h1 {
+        font-size: 28px;
+        margin-bottom: 8px;
+      }
+
+      .header p {
+        opacity: 0.9;
+        font-size: 14px;
+      }
+
+      .content {
+        padding: 30px;
+      }
+
+      .input-section {
+        margin-bottom: 30px;
+      }
+
+      .input-wrapper {
+        position: relative;
+        margin-bottom: 15px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #333;
+        font-size: 14px;
+      }
+
+      .password-input-container {
+        position: relative;
+      }
+
+      input[type="text"],
+      input[type="password"] {
+        width: 100%;
+        padding: 14px 45px 14px 14px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 16px;
+        transition: border-color 0.3s;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+
+      .toggle-visibility {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #666;
+        font-size: 18px;
+        padding: 5px;
+      }
+
+      .toggle-visibility:hover {
+        color: #667eea;
+      }
+
+      .mode-toggle {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      .switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 26px;
+      }
+
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 26px;
+      }
+
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 20px;
+        width: 20px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+
+      input:checked + .slider {
+        background-color: #667eea;
+      }
+
+      input:checked + .slider:before {
+        transform: translateX(24px);
+      }
+
+      .strength-indicator {
+        margin-bottom: 25px;
+      }
+
+      .strength-bar {
+        height: 8px;
+        background: #f0f0f0;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 12px;
+      }
+
+      .strength-fill {
+        height: 100%;
+        width: 0%;
+        transition: width 0.3s, background-color 0.3s;
+        border-radius: 4px;
+      }
+
+      .strength-fill.very-weak {
+        background: #d32f2f;
+        width: 20%;
+      }
+      .strength-fill.weak {
+        background: #f57c00;
+        width: 40%;
+      }
+      .strength-fill.good {
+        background: #fbc02d;
+        width: 60%;
+      }
+      .strength-fill.strong {
+        background: #388e3c;
+        width: 80%;
+      }
+      .strength-fill.very-strong {
+        background: #1976d2;
+        width: 100%;
+      }
+
+      .strength-details {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .strength-label {
+        font-weight: 600;
+        font-size: 16px;
+      }
+
+      .strength-label.very-weak {
+        color: #d32f2f;
+      }
+      .strength-label.weak {
+        color: #f57c00;
+      }
+      .strength-label.good {
+        color: #fbc02d;
+      }
+      .strength-label.strong {
+        color: #388e3c;
+      }
+      .strength-label.very-strong {
+        color: #1976d2;
+      }
+
+      .crack-time {
+        color: #666;
+        font-size: 14px;
+      }
+
+      .strength-legend {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 25px;
+      }
+
+      .strength-legend h3 {
+        font-size: 16px;
+        margin-bottom: 12px;
+        color: #333;
+      }
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+        font-size: 14px;
+      }
+
+      .legend-color {
+        width: 24px;
+        height: 12px;
+        border-radius: 3px;
+      }
+
+      .tips-section {
+        background: #e3f2fd;
+        border-left: 4px solid #1976d2;
+        border-radius: 8px;
+        padding: 20px;
+      }
+
+      .tips-section h3 {
+        font-size: 16px;
+        margin-bottom: 12px;
+        color: #1565c0;
+      }
+
+      .tips-section ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      .tips-section li {
+        padding: 6px 0;
+        padding-left: 24px;
+        position: relative;
+        font-size: 14px;
+        color: #555;
+      }
+
+      .tips-section li:before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        color: #1976d2;
+        font-weight: bold;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          margin: 10px;
+        }
+
+        .header h1 {
+          font-size: 24px;
+        }
+
+        .content {
+          padding: 20px;
+        }
+
+        .strength-details {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🔒 Password Strength Checker</h1>
+        <p>Test your password security in real-time</p>
+      </div>
+
+      <div class="content">
+        <!-- Mode Toggle -->
+        <div class="mode-toggle">
+          <span style="font-size: 14px; color: #666">Password Mode</span>
+          <label class="switch">
+            <input
+              type="checkbox"
+              id="modeToggle"
+              aria-label="Toggle between password and passphrase mode"
+            />
+            <span class="slider"></span>
+          </label>
+          <span style="font-size: 14px; color: #666">Passphrase Mode</span>
+        </div>
+
+        <!-- Input Section -->
+        <div class="input-section">
+          <label for="passwordInput">Enter your password</label>
+          <div class="password-input-container">
+            <input
+              type="password"
+              id="passwordInput"
+              placeholder="Type your password here..."
+              aria-describedby="strengthIndicator"
+            />
+            <button
+              class="toggle-visibility"
+              id="toggleBtn"
+              aria-label="Toggle password visibility"
+            >
+              👁️
+            </button>
+          </div>
+        </div>
+
+        <!-- Strength Indicator -->
+        <div class="strength-indicator" id="strengthIndicator">
+          <div class="strength-bar">
+            <div class="strength-fill" id="strengthFill"></div>
+          </div>
+          <div class="strength-details">
+            <span class="strength-label" id="strengthLabel"
+              >Enter a password to begin</span
+            >
+            <span class="crack-time" id="crackTime"></span>
+          </div>
+        </div>
+
+        <!-- Strength Legend -->
+        <div class="strength-legend">
+          <h3>Strength Categories</h3>
+          <div class="legend-item">
+            <div class="legend-color" style="background: #d32f2f"></div>
+            <span
+              ><strong>Very Weak:</strong> Less than 6 characters, easily
+              guessable</span
+            >
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: #f57c00"></div>
+            <span><strong>Weak:</strong> Short or common patterns</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: #fbc02d"></div>
+            <span
+              ><strong>Good:</strong> Moderate length with some complexity</span
+            >
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: #388e3c"></div>
+            <span><strong>Strong:</strong> Long with mixed characters</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: #1976d2"></div>
+            <span
+              ><strong>Very Strong:</strong> Maximum security with high
+              entropy</span
+            >
+          </div>
+        </div>
+
+        <!-- Tips Section -->
+        <div class="tips-section">
+          <h3>💡 Tips for Strong Passwords</h3>
+          <ul>
+            <li>Use at least 12-16 characters for passwords</li>
+            <li>Mix uppercase, lowercase, numbers, and symbols</li>
+            <li>Avoid personal information (names, birthdays, addresses)</li>
+            <li>Don't use common words or patterns (e.g., "password123")</li>
+            <li>Use unique passwords for each account</li>
+            <li>
+              Consider using passphrases: 4-5 random words separated by spaces
+            </li>
+            <li>Use a password manager to generate and store passwords</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ============================================
+      // ZXCVBN-like Password Strength Calculator
+      // ============================================
+
+      // Common passwords list (simplified version)
+      const commonPasswords = [
+        "password",
+        "123456",
+        "12345678",
+        "qwerty",
+        "abc123",
+        "monkey",
+        "1234567",
+        "letmein",
+        "trustno1",
+        "dragon",
+        "baseball",
+        "iloveyou",
+        "master",
+        "sunshine",
+        "ashley",
+        "bailey",
+        "shadow",
+        "superman",
+        "123456789",
+        "password1",
+        "qwerty123",
+        "welcome",
+        "admin",
+        "login",
+      ];
+
+      // Common patterns
+      const commonPatterns = [
+        /^[a-z]+$/i, // Only letters
+        /^[0-9]+$/, // Only numbers
+        /^(.)\1+$/, // Repeated characters (aaa, 111)
+        /^(01|12|23|34|45|56|67|78|89)+/, // Sequential numbers
+        /^(abc|bcd|cde|def|efg)+/i, // Sequential letters
+        /^(qwe|wer|ert|rty|tyu|yui)+/i, // Keyboard patterns
+      ];
+
+      // Calculate password entropy
+      function calculateEntropy(password, isPassphrase) {
+        let charsetSize = 0;
+
+        if (isPassphrase) {
+          // For passphrases, estimate based on word count and uniqueness
+          const words = password.trim().split(/\s+/);
+          const uniqueWords = new Set(words.map((w) => w.toLowerCase()));
+          const avgWordLength =
+            password.replace(/\s+/g, "").length / words.length;
+
+          // Estimate vocabulary size based on word length
+          const vocabSize = Math.pow(26, Math.min(avgWordLength, 5)) / 1000;
+          return Math.log2(Math.pow(vocabSize, uniqueWords.size));
+        }
+
+        // Standard password entropy calculation
+        if (/[a-z]/.test(password)) charsetSize += 26;
+        if (/[A-Z]/.test(password)) charsetSize += 26;
+        if (/[0-9]/.test(password)) charsetSize += 10;
+        if (/[^a-zA-Z0-9]/.test(password)) charsetSize += 33;
+
+        return Math.log2(Math.pow(charsetSize, password.length));
+      }
+
+      // Check for common patterns
+      function hasCommonPattern(password) {
+        const lower = password.toLowerCase();
+
+        // Check common passwords
+        if (commonPasswords.includes(lower)) return true;
+
+        // Check common patterns
+        for (let pattern of commonPatterns) {
+          if (pattern.test(password)) return true;
+        }
+
+        return false;
+      }
+
+      // Main strength calculation function
+      function calculateStrength(password, isPassphrase) {
+        if (!password) return { score: 0, label: "", time: "", class: "" };
+
+        let score = 0;
+        const length = password.length;
+
+        if (isPassphrase) {
+          // Passphrase mode scoring
+          const words = password
+            .trim()
+            .split(/\s+/)
+            .filter((w) => w.length > 0);
+          const uniqueWords = new Set(words.map((w) => w.toLowerCase())).size;
+
+          // Base score on word count
+          if (words.length >= 4) score += 2;
+          else if (words.length >= 3) score += 1;
+
+          // Bonus for unique words
+          if (uniqueWords === words.length) score += 1;
+
+          // Bonus for variety in word length
+          const lengths = words.map((w) => w.length);
+          const avgLength = lengths.reduce((a, b) => a + b, 0) / lengths.length;
+          if (avgLength >= 5) score += 1;
+
+          // Bonus for including numbers or symbols
+          if (/[0-9]/.test(password)) score += 1;
+          if (/[^a-zA-Z0-9\s]/.test(password)) score += 1;
+        } else {
+          // Password mode scoring
+          // Length scoring
+          if (length >= 16) score += 2;
+          else if (length >= 12) score += 1;
+          else if (length >= 8) score += 0;
+          else score -= 1;
+
+          // Character variety scoring
+          let variety = 0;
+          if (/[a-z]/.test(password)) variety++;
+          if (/[A-Z]/.test(password)) variety++;
+          if (/[0-9]/.test(password)) variety++;
+          if (/[^a-zA-Z0-9]/.test(password)) variety++;
+
+          score += Math.min(variety, 3);
+
+          // Penalize common patterns
+          if (hasCommonPattern(password)) score -= 2;
+        }
+
+        // Calculate entropy for crack time estimation
+        const entropy = calculateEntropy(password, isPassphrase);
+
+        // Normalize score to 0-4 range
+        score = Math.max(0, Math.min(4, score));
+
+        // Determine label and class
+        let label, className, time;
+
+        if (score === 0) {
+          label = "Very Weak";
+          className = "very-weak";
+          time = "Instant to seconds";
+        } else if (score === 1) {
+          label = "Weak";
+          className = "weak";
+          time = "Minutes to hours";
+        } else if (score === 2) {
+          label = "Good";
+          className = "good";
+          time = "Days to months";
+        } else if (score === 3) {
+          label = "Strong";
+          className = "strong";
+          time = "Years to decades";
+        } else {
+          label = "Very Strong";
+          className = "very-strong";
+          time = "Centuries or more";
+        }
+
+        // Refine time estimate based on entropy
+        if (entropy < 28) time = "Instant";
+        else if (entropy < 36) time = "Minutes";
+        else if (entropy < 50) time = "Days";
+        else if (entropy < 60) time = "Months";
+        else if (entropy < 70) time = "Years";
+        else if (entropy < 80) time = "Decades";
+        else time = "Centuries";
+
+        return {
+          score,
+          label,
+          time: `Time to crack: ${time}`,
+          class: className,
+        };
+      }
+
+      // ============================================
+      // DOM Elements and Event Listeners
+      // ============================================
+
+      const passwordInput = document.getElementById("passwordInput");
+      const toggleBtn = document.getElementById("toggleBtn");
+      const modeToggle = document.getElementById("modeToggle");
+      const strengthFill = document.getElementById("strengthFill");
+      const strengthLabel = document.getElementById("strengthLabel");
+      const crackTime = document.getElementById("crackTime");
+
+      let isPassphraseMode = false;
+
+      // Toggle password visibility
+      toggleBtn.addEventListener("click", () => {
+        const type = passwordInput.type === "password" ? "text" : "password";
+        passwordInput.type = type;
+        toggleBtn.textContent = type === "password" ? "👁️" : "🙈";
+      });
+
+      // Toggle between password and passphrase mode
+      modeToggle.addEventListener("change", (e) => {
+        isPassphraseMode = e.target.checked;
+        const currentValue = passwordInput.value;
+
+        if (isPassphraseMode) {
+          passwordInput.placeholder =
+            'Enter a passphrase (e.g., "correct horse battery staple")';
+        } else {
+          passwordInput.placeholder = "Type your password here...";
+        }
+
+        // Recalculate strength with new mode
+        if (currentValue) {
+          updateStrength(currentValue);
+        }
+      });
+
+      // Real-time strength calculation
+      passwordInput.addEventListener("input", (e) => {
+        updateStrength(e.target.value);
+      });
+
+      function updateStrength(password) {
+        const result = calculateStrength(password, isPassphraseMode);
+
+        // Update UI
+        strengthFill.className = `strength-fill ${result.class}`;
+        strengthLabel.className = `strength-label ${result.class}`;
+        strengthLabel.textContent = result.label || "Enter a password to begin";
+        crackTime.textContent = result.time;
+      }
+
+      // Keyboard accessibility for toggle button
+      toggleBtn.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          toggleBtn.click();
+        }
+      });
+    </script>
+  </body>
+</html>
