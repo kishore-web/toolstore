@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Computer Institute Profit Calculator</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: linear-gradient(135deg, #4e73df, #1cc88a);
+        color: #fff;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .container {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 30px;
+        border-radius: 12px;
+        width: 100%;
+        max-width: 400px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+      }
+      h2 {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      label {
+        display: block;
+        margin-top: 10px;
+      }
+      input {
+        width: 100%;
+        padding: 8px;
+        border-radius: 6px;
+        border: none;
+        margin-top: 5px;
+      }
+      button {
+        width: 100%;
+        margin-top: 20px;
+        padding: 10px;
+        border: none;
+        border-radius: 6px;
+        background-color: #1cc88a;
+        color: #fff;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #17a673;
+      }
+      .result {
+        margin-top: 20px;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 15px;
+        border-radius: 8px;
+      }
+      .result p {
+        margin: 8px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Computer Institute Profit Calculator</h2>
+
+      <label>Total Students:</label>
+      <input
+        type="number"
+        id="students"
+        placeholder="Enter number of students"
+      />
+
+      <label>Course Fee (₹):</label>
+      <input type="number" id="courseFee" placeholder="Enter fee per student" />
+
+      <label>Project Completion Rate (%):</label>
+      <input
+        type="number"
+        id="completionRate"
+        placeholder="Enter % of completed projects"
+      />
+
+      <label>Sales Cost per Customer (₹):</label>
+      <input
+        type="number"
+        id="salesCost"
+        placeholder="Enter sales cost per customer"
+      />
+
+      <label>Reward Amount per Completed Student (₹):</label>
+      <input type="number" id="rewardAmount" value="25000" />
+
+      <button onclick="calculateProfit()">Calculate Profit</button>
+
+      <div class="result" id="result"></div>
+    </div>
+
+    <script>
+      function calculateProfit() {
+        const students =
+          parseFloat(document.getElementById("students").value) || 0;
+        const courseFee =
+          parseFloat(document.getElementById("courseFee").value) || 0;
+        const completionRate =
+          parseFloat(document.getElementById("completionRate").value) || 0;
+        const salesCost =
+          parseFloat(document.getElementById("salesCost").value) || 0;
+        const rewardAmount =
+          parseFloat(document.getElementById("rewardAmount").value) || 25000;
+
+        const totalRevenue = students * courseFee;
+        const completedStudents = (students * completionRate) / 100;
+        const projectRewardExpense = completedStudents * rewardAmount;
+        const totalSalesCost = students * salesCost;
+        const totalExpense = projectRewardExpense + totalSalesCost;
+        const profit = totalRevenue - totalExpense;
+
+        document.getElementById("result").innerHTML = `
+        <p><strong>Total Revenue:</strong> ₹${totalRevenue.toLocaleString()}</p>
+        <p><strong>Completed Students:</strong> ${completedStudents.toFixed(
+          2
+        )}</p>
+        <p><strong>Project Reward Expense:</strong> ₹${projectRewardExpense.toLocaleString()}</p>
+        <p><strong>Sales Cost:</strong> ₹${totalSalesCost.toLocaleString()}</p>
+        <hr>
+        <p><strong>Total Profit:</strong> ₹${profit.toLocaleString()}</p>
+      `;
+      }
+    </script>
+  </body>
+</html>
