@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Picker Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f5f5f5;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 18px;
+            text-align: center;
+            cursor: pointer;
+            background: #f5f5f5;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .tab:hover {
+            background: #e8e8e8;
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f9f9f9;
+        }
+
+        .upload-area:hover {
+            background: #f0f0ff;
+            border-color: #764ba2;
+        }
+
+        .upload-area.dragover {
+            background: #e8e8ff;
+            border-color: #764ba2;
+        }
+
+        #imageInput {
+            display: none;
+        }
+
+        .canvas-container {
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        #canvas {
+            max-width: 100%;
+            cursor: crosshair;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .color-picker-section {
+            margin-bottom: 30px;
+        }
+
+        .picker-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        #colorInput {
+            width: 80px;
+            height: 80px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .color-display {
+            flex: 1;
+            height: 80px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .screen-picker-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .screen-picker-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .screen-picker-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .color-values {
+            background: #f9f9f9;
+            border-radius: 15px;
+            padding: 25px;
+        }
+
+        .color-value {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .color-value:last-child {
+            margin-bottom: 0;
+        }
+
+        .color-label {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 14px;
+        }
+
+        .color-code {
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            color: #333;
+            background: #f5f5f5;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .color-code:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .copy-notification {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #4caf50;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(400px); }
+            to { transform: translateX(0); }
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .info-text {
+            color: #666;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .selected-color-preview {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 15px;
+        }
+
+        .preview-box {
+            width: 100%;
+            height: 100px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .color-palette {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 15px;
+        }
+
+        .palette-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .palette-colors {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .palette-color {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .palette-color:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .palette-color-tooltip {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 11px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 10;
+        }
+
+        .palette-color:hover .palette-color-tooltip {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 Color Picker Pro</h1>
+            <p>Pick colors from images or use the color picker</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab(0)">📷 Pick from Image</button>
+            <button class="tab" onclick="switchTab(1)">🎨 Color Picker</button>
+        </div>
+
+        <div class="tab-content active">
+            <div class="upload-area" id="uploadArea" onclick="document.getElementById('imageInput').click()">
+                <div class="upload-icon">📁</div>
+                <h3>Click or Drag & Drop an Image</h3>
+                <p class="info-text">Support: JPG, PNG, GIF, WebP</p>
+            </div>
+            <input type="file" id="imageInput" accept="image/*">
+            
+            <div class="canvas-container" id="canvasContainer">
+                <canvas id="canvas"></canvas>
+                <p class="info-text">Click anywhere on the image to pick a color</p>
+            </div>
+
+            <div class="selected-color-preview" id="selectedColorPreview">
+                <h3 class="palette-title">Selected Color Preview</h3>
+                <div class="preview-box" id="previewBox"></div>
+            </div>
+
+            <div id="imageColorValues" style="margin-top: 20px; display: none;">
+                <div class="color-values">
+                    <div class="color-value">
+                        <span class="color-label">HEX</span>
+                        <span class="color-code" id="imageHex" onclick="copyToClipboard(this.textContent)">#000000</span>
+                    </div>
+                    <div class="color-value">
+                        <span class="color-label">RGB</span>
+                        <span class="color-code" id="imageRgb" onclick="copyToClipboard(this.textContent)">rgb(0, 0, 0)</span>
+                    </div>
+                    <div class="color-value">
+                        <span class="color-label">HSL</span>
+                        <span class="color-code" id="imageHsl" onclick="copyToClipboard(this.textContent)">hsl(0, 0%, 0%)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="color-palette" id="colorPalette">
+                <h3 class="palette-title">🎨 Dominant Colors from Image</h3>
+                <div class="palette-colors" id="paletteColors"></div>
+            </div>
+        </div>
+
+        <div class="tab-content">
+            <div class="color-picker-section">
+                <h3 class="section-title">Choose Color</h3>
+                <div class="picker-wrapper">
+                    <input type="color" id="colorInput" value="#667eea">
+                    <div class="color-display" id="colorDisplay"></div>
+                </div>
+            </div>
+
+            <div class="color-picker-section">
+                <h3 class="section-title">Pick from Screen</h3>
+                <button class="screen-picker-btn" id="screenPickerBtn">
+                    🖱️ Pick Color from Screen
+                </button>
+                <p class="info-text">Note: Screen picker may not be supported in all browsers</p>
+            </div>
+
+            <div class="color-values">
+                <div class="color-value">
+                    <span class="color-label">HEX</span>
+                    <span class="color-code" id="pickerHex" onclick="copyToClipboard(this.textContent)">#667eea</span>
+                </div>
+                <div class="color-value">
+                    <span class="color-label">RGB</span>
+                    <span class="color-code" id="pickerRgb" onclick="copyToClipboard(this.textContent)">rgb(102, 126, 234)</span>
+                </div>
+                <div class="color-value">
+                    <span class="color-label">HSL</span>
+                    <span class="color-code" id="pickerHsl" onclick="copyToClipboard(this.textContent)">hsl(229, 76%, 66%)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="copy-notification" id="copyNotification">
+        ✓ Copied to clipboard!
+    </div>
+
+    <script>
+        // Tab switching
+        function switchTab(index) {
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach((tab, i) => {
+                tab.classList.toggle('active', i === index);
+            });
+            
+            contents.forEach((content, i) => {
+                content.classList.toggle('active', i === index);
+            });
+        }
+
+        // Image upload and color picking
+        const uploadArea = document.getElementById('uploadArea');
+        const imageInput = document.getElementById('imageInput');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const canvasContainer = document.getElementById('canvasContainer');
+        const imageColorValues = document.getElementById('imageColorValues');
+        const selectedColorPreview = document.getElementById('selectedColorPreview');
+        const previewBox = document.getElementById('previewBox');
+        const colorPalette = document.getElementById('colorPalette');
+        const paletteColors = document.getElementById('paletteColors');
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                loadImage(file);
+            }
+        });
+
+        imageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                loadImage(file);
+            }
+        });
+
+        function loadImage(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const maxWidth = 700;
+                    const maxHeight = 500;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > maxWidth) {
+                        height *= maxWidth / width;
+                        width = maxWidth;
+                    }
+                    if (height > maxHeight) {
+                        width *= maxHeight / height;
+                        height = maxHeight;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+                    canvasContainer.style.display = 'block';
+                    imageColorValues.style.display = 'block';
+                    colorPalette.style.display = 'block';
+                    
+                    // Extract dominant colors
+                    extractDominantColors();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const pixel = ctx.getImageData(x, y, 1, 1).data;
+            const hex = rgbToHex(pixel[0], pixel[1], pixel[2]);
+            const rgb = `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
+            const hsl = rgbToHsl(pixel[0], pixel[1], pixel[2]);
+
+            document.getElementById('imageHex').textContent = hex;
+            document.getElementById('imageRgb').textContent = rgb;
+            document.getElementById('imageHsl').textContent = hsl;
+            
+            // Update preview
+            previewBox.style.background = hex;
+            selectedColorPreview.style.display = 'block';
+        });
+
+        // Extract dominant colors from image
+        function extractDominantColors() {
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const pixels = imageData.data;
+            const colorMap = {};
+            
+            // Sample every 10th pixel for performance
+            for (let i = 0; i < pixels.length; i += 40) {
+                const r = pixels[i];
+                const g = pixels[i + 1];
+                const b = pixels[i + 2];
+                const a = pixels[i + 3];
+                
+                // Skip transparent pixels
+                if (a < 125) continue;
+                
+                // Round colors to reduce variation
+                const roundedR = Math.round(r / 10) * 10;
+                const roundedG = Math.round(g / 10) * 10;
+                const roundedB = Math.round(b / 10) * 10;
+                
+                const key = `${roundedR},${roundedG},${roundedB}`;
+                colorMap[key] = (colorMap[key] || 0) + 1;
+            }
+            
+            // Sort by frequency and get top colors
+            const sortedColors = Object.entries(colorMap)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 12)
+                .map(([color]) => {
+                    const [r, g, b] = color.split(',').map(Number);
+                    return { r, g, b, hex: rgbToHex(r, g, b) };
+                });
+            
+            // Display palette
+            paletteColors.innerHTML = '';
+            sortedColors.forEach(color => {
+                const div = document.createElement('div');
+                div.className = 'palette-color';
+                div.style.background = color.hex;
+                div.onclick = () => {
+                    document.getElementById('imageHex').textContent = color.hex;
+                    document.getElementById('imageRgb').textContent = `rgb(${color.r}, ${color.g}, ${color.b})`;
+                    document.getElementById('imageHsl').textContent = rgbToHsl(color.r, color.g, color.b);
+                    previewBox.style.background = color.hex;
+                    selectedColorPreview.style.display = 'block';
+                };
+                
+                const tooltip = document.createElement('div');
+                tooltip.className = 'palette-color-tooltip';
+                tooltip.textContent = color.hex;
+                div.appendChild(tooltip);
+                
+                paletteColors.appendChild(div);
+            });
+        }
+
+        // Color picker
+        const colorInput = document.getElementById('colorInput');
+        const colorDisplay = document.getElementById('colorDisplay');
+        const screenPickerBtn = document.getElementById('screenPickerBtn');
+
+        colorInput.addEventListener('input', (e) => {
+            updateColorValues(e.target.value);
+        });
+
+        function updateColorValues(hex) {
+            colorDisplay.style.background = hex;
+            const rgb = hexToRgb(hex);
+            const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+
+            document.getElementById('pickerHex').textContent = hex;
+            document.getElementById('pickerRgb').textContent = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+            document.getElementById('pickerHsl').textContent = hsl;
+        }
+
+        // Screen picker
+        screenPickerBtn.addEventListener('click', async () => {
+            if (!window.EyeDropper) {
+                alert('Screen color picker is not supported in your browser. Try using Chrome or Edge.');
+                return;
+            }
+
+            try {
+                const eyeDropper = new EyeDropper();
+                const result = await eyeDropper.open();
+                colorInput.value = result.sRGBHex;
+                updateColorValues(result.sRGBHex);
+            } catch (e) {
+                console.log('User cancelled the picker');
+            }
+        });
+
+        // Color conversion functions
+        function rgbToHex(r, g, b) {
+            return '#' + [r, g, b].map(x => {
+                const hex = x.toString(16);
+                return hex.length === 1 ? '0' + hex : hex;
+            }).join('');
+        }
+
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+
+        function rgbToHsl(r, g, b) {
+            r /= 255;
+            g /= 255;
+            b /= 255;
+
+            const max = Math.max(r, g, b);
+            const min = Math.min(r, g, b);
+            let h, s, l = (max + min) / 2;
+
+            if (max === min) {
+                h = s = 0;
+            } else {
+                const d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch (max) {
+                    case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+                    case g: h = ((b - r) / d + 2) / 6; break;
+                    case b: h = ((r - g) / d + 4) / 6; break;
+                }
+            }
+
+            h = Math.round(h * 360);
+            s = Math.round(s * 100);
+            l = Math.round(l * 100);
+
+            return `hsl(${h}, ${s}%, ${l}%)`;
+        }
+
+        // Copy to clipboard
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const notification = document.getElementById('copyNotification');
+                notification.style.display = 'block';
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 2000);
+            });
+        }
+
+        // Initialize
+        updateColorValues('#667eea');
+    </script>
+</body>
+</html>
