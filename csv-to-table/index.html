@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CSV Table Converter</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+      }
+
+      .header h1 {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+      }
+
+      .header p {
+        font-size: 1.1em;
+        opacity: 0.9;
+      }
+
+      .input-section {
+        padding: 30px;
+        border-bottom: 2px solid #e0e0e0;
+      }
+
+      .textarea-wrapper {
+        position: relative;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 150px;
+        padding: 15px;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        font-family: "Courier New", monospace;
+        font-size: 14px;
+        resize: vertical;
+        transition: border-color 0.3s;
+      }
+
+      textarea:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+
+      .button-group {
+        margin-top: 20px;
+        display: flex;
+        gap: 15px;
+      }
+
+      button {
+        padding: 12px 30px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        flex: 1;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn-secondary {
+        background: #f0f0f0;
+        color: #333;
+        padding: 12px 24px;
+      }
+
+      .btn-secondary:hover {
+        background: #e0e0e0;
+      }
+
+      .filter-section {
+        padding: 30px;
+        background: #f9f9f9;
+        border-bottom: 2px solid #e0e0e0;
+        display: none;
+      }
+
+      .filter-section.active {
+        display: block;
+      }
+
+      .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+      }
+
+      .filter-item {
+        background: white;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .filter-item label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #333;
+      }
+
+      .filter-item input,
+      .filter-item select {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: border-color 0.3s;
+      }
+
+      .filter-item input:focus,
+      .filter-item select:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+
+      .data-type-badge {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        margin-left: 8px;
+      }
+
+      .type-number {
+        background: #e3f2fd;
+        color: #1976d2;
+      }
+      .type-date {
+        background: #f3e5f5;
+        color: #7b1fa2;
+      }
+      .type-text {
+        background: #e8f5e9;
+        color: #388e3c;
+      }
+
+      .table-section {
+        padding: 30px;
+        overflow-x: auto;
+        display: none;
+      }
+
+      .table-section.active {
+        display: block;
+      }
+
+      .table-info {
+        margin-bottom: 20px;
+        padding: 15px;
+        background: #f0f7ff;
+        border-radius: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      thead {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+
+      th {
+        padding: 15px;
+        text-align: left;
+        font-weight: 600;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+
+      td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #e0e0e0;
+      }
+
+      tbody tr {
+        transition: background-color 0.2s;
+      }
+
+      tbody tr:hover {
+        background-color: #f5f5f5;
+      }
+
+      tbody tr:nth-child(even) {
+        background-color: #fafafa;
+      }
+
+      .no-data {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+        font-size: 1.2em;
+      }
+
+      .example-link {
+        color: white;
+        text-decoration: underline;
+        cursor: pointer;
+        opacity: 0.9;
+      }
+
+      .example-link:hover {
+        opacity: 1;
+      }
+
+      @media (max-width: 768px) {
+        .header h1 {
+          font-size: 1.8em;
+        }
+
+        .button-group {
+          flex-direction: column;
+        }
+
+        .filters-grid {
+          grid-template-columns: 1fr;
+        }
+
+        table {
+          font-size: 14px;
+        }
+
+        th,
+        td {
+          padding: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>📊 CSV Table Converter</h1>
+        <p>
+          Paste your CSV data with headers • Auto-detect data types • Filter by
+          columns
+        </p>
+        <p style="font-size: 0.9em; margin-top: 10px">
+          <span class="example-link" onclick="loadExample()"
+            >Load example data</span
+          >
+        </p>
+      </div>
+
+      <div class="input-section">
+        <div class="textarea-wrapper">
+          <textarea
+            id="csvInput"
+            placeholder="Paste your CSV data here with headers...&#10;&#10;Example:&#10;Name,Age,Salary,Join Date&#10;John Doe,28,50000,2023-01-15&#10;Jane Smith,34,65000,2022-06-20"
+          ></textarea>
+        </div>
+        <div class="button-group">
+          <button class="btn-primary" onclick="processCSV()">
+            Convert to Table
+          </button>
+          <button class="btn-secondary" onclick="clearAll()">Clear</button>
+        </div>
+      </div>
+
+      <div class="filter-section" id="filterSection">
+        <h3 style="margin-bottom: 10px">🔍 Filter Data</h3>
+        <div class="filters-grid" id="filtersContainer"></div>
+      </div>
+
+      <div class="table-section" id="tableSection">
+        <div class="table-info">
+          <div>
+            <strong>Total Rows:</strong> <span id="totalRows">0</span> |
+            <strong>Filtered Rows:</strong> <span id="filteredRows">0</span>
+          </div>
+          <button class="btn-secondary" onclick="resetFilters()">
+            Reset Filters
+          </button>
+        </div>
+        <div id="tableContainer"></div>
+      </div>
+    </div>
+
+    <script>
+      let tableData = [];
+      let headers = [];
+      let dataTypes = {};
+      let filteredData = [];
+
+      function detectDataType(value) {
+        if (value === null || value === undefined || value === "") {
+          return "text";
+        }
+
+        const str = String(value).trim();
+
+        // Check for number
+        if (!isNaN(str) && !isNaN(parseFloat(str))) {
+          return "number";
+        }
+
+        // Check for date (various formats)
+        const datePatterns = [
+          /^\d{4}-\d{2}-\d{2}$/, // YYYY-MM-DD
+          /^\d{2}\/\d{2}\/\d{4}$/, // MM/DD/YYYY
+          /^\d{2}-\d{2}-\d{4}$/, // DD-MM-YYYY
+          /^\d{4}\/\d{2}\/\d{2}$/, // YYYY/MM/DD
+        ];
+
+        for (let pattern of datePatterns) {
+          if (pattern.test(str)) {
+            const date = new Date(str);
+            if (!isNaN(date.getTime())) {
+              return "date";
+            }
+          }
+        }
+
+        return "text";
+      }
+
+      function analyzeColumnTypes(data, headers) {
+        const types = {};
+
+        headers.forEach((header) => {
+          const columnValues = data
+            .map((row) => row[header])
+            .filter((val) => val !== "");
+
+          if (columnValues.length === 0) {
+            types[header] = "text";
+            return;
+          }
+
+          const typeCounts = { number: 0, date: 0, text: 0 };
+
+          columnValues.forEach((val) => {
+            const type = detectDataType(val);
+            typeCounts[type]++;
+          });
+
+          // Determine dominant type (>70% threshold)
+          const total = columnValues.length;
+          if (typeCounts.number / total > 0.7) {
+            types[header] = "number";
+          } else if (typeCounts.date / total > 0.7) {
+            types[header] = "date";
+          } else {
+            types[header] = "text";
+          }
+        });
+
+        return types;
+      }
+
+      function parseCSV(text) {
+        const lines = text.trim().split("\n");
+        if (lines.length < 2) {
+          alert(
+            "Please provide CSV data with at least headers and one data row."
+          );
+          return null;
+        }
+
+        headers = lines[0].split(",").map((h) => h.trim());
+        const data = [];
+
+        for (let i = 1; i < lines.length; i++) {
+          const values = lines[i].split(",").map((v) => v.trim());
+          const row = {};
+          headers.forEach((header, index) => {
+            row[header] = values[index] || "";
+          });
+          data.push(row);
+        }
+
+        return data;
+      }
+
+      function processCSV() {
+        const input = document.getElementById("csvInput").value;
+
+        if (!input.trim()) {
+          alert("Please paste some CSV data first!");
+          return;
+        }
+
+        tableData = parseCSV(input);
+
+        if (!tableData) return;
+
+        dataTypes = analyzeColumnTypes(tableData, headers);
+        filteredData = [...tableData];
+
+        renderFilters();
+        renderTable();
+
+        document.getElementById("filterSection").classList.add("active");
+        document.getElementById("tableSection").classList.add("active");
+      }
+
+      function renderFilters() {
+        const container = document.getElementById("filtersContainer");
+        container.innerHTML = "";
+
+        headers.forEach((header) => {
+          const filterItem = document.createElement("div");
+          filterItem.className = "filter-item";
+
+          const type = dataTypes[header];
+          const badge = `<span class="data-type-badge type-${type}">${type}</span>`;
+
+          filterItem.innerHTML = `
+                    <label>${header}${badge}</label>
+                    ${
+                      type === "number"
+                        ? `
+                        <input type="number" 
+                               id="filter-${header}" 
+                               placeholder="Filter ${header}..." 
+                               oninput="applyFilters()">
+                    `
+                        : type === "date"
+                        ? `
+                        <input type="date" 
+                               id="filter-${header}" 
+                               oninput="applyFilters()">
+                    `
+                        : `
+                        <input type="text" 
+                               id="filter-${header}" 
+                               placeholder="Filter ${header}..." 
+                               oninput="applyFilters()">
+                    `
+                    }
+                `;
+
+          container.appendChild(filterItem);
+        });
+      }
+
+      function applyFilters() {
+        filteredData = tableData.filter((row) => {
+          return headers.every((header) => {
+            const filterInput = document.getElementById(`filter-${header}`);
+            const filterValue = filterInput.value.trim().toLowerCase();
+
+            if (!filterValue) return true;
+
+            const cellValue = String(row[header]).toLowerCase();
+            const type = dataTypes[header];
+
+            if (type === "number") {
+              return parseFloat(row[header]) === parseFloat(filterValue);
+            } else if (type === "date") {
+              return (
+                row[header].includes(filterValue) ||
+                cellValue.includes(filterValue)
+              );
+            } else {
+              return cellValue.includes(filterValue);
+            }
+          });
+        });
+
+        renderTable();
+      }
+
+      function renderTable() {
+        const container = document.getElementById("tableContainer");
+
+        if (filteredData.length === 0) {
+          container.innerHTML = '<div class="no-data">No data to display</div>';
+          document.getElementById("filteredRows").textContent = "0";
+          return;
+        }
+
+        let html = "<table><thead><tr>";
+
+        headers.forEach((header) => {
+          const type = dataTypes[header];
+          html += `<th>${header} <span class="data-type-badge type-${type}">${type}</span></th>`;
+        });
+
+        html += "</tr></thead><tbody>";
+
+        filteredData.forEach((row) => {
+          html += "<tr>";
+          headers.forEach((header) => {
+            html += `<td>${row[header]}</td>`;
+          });
+          html += "</tr>";
+        });
+
+        html += "</tbody></table>";
+        container.innerHTML = html;
+
+        document.getElementById("totalRows").textContent = tableData.length;
+        document.getElementById("filteredRows").textContent =
+          filteredData.length;
+      }
+
+      function resetFilters() {
+        headers.forEach((header) => {
+          const filterInput = document.getElementById(`filter-${header}`);
+          if (filterInput) filterInput.value = "";
+        });
+        filteredData = [...tableData];
+        renderTable();
+      }
+
+      function clearAll() {
+        document.getElementById("csvInput").value = "";
+        document.getElementById("filterSection").classList.remove("active");
+        document.getElementById("tableSection").classList.remove("active");
+        tableData = [];
+        filteredData = [];
+        headers = [];
+        dataTypes = {};
+      }
+
+      function loadExample() {
+        const exampleCSV = `Name,Age,Salary,Department,Join Date,Active
+John Doe,28,50000,Engineering,2023-01-15,Yes
+Jane Smith,34,65000,Marketing,2022-06-20,Yes
+Bob Johnson,45,75000,Engineering,2021-03-10,Yes
+Alice Williams,29,55000,Sales,2023-05-01,Yes
+Charlie Brown,38,70000,HR,2022-11-15,No
+Diana Prince,31,60000,Marketing,2023-02-28,Yes
+Eve Davis,42,80000,Engineering,2020-09-05,Yes
+Frank Miller,26,48000,Sales,2024-01-10,Yes`;
+
+        document.getElementById("csvInput").value = exampleCSV;
+        processCSV();
+      }
+    </script>
+  </body>
+</html>
