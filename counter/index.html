@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Multi Counter</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <main class="app">
+    <header class="app__header">
+      <h1><i class="fas fa-calculator"></i> Multi Counter</h1>
+      <div class="header-actions">
+        <button id="add-counter" class="btn btn-primary">
+          <i class="fas fa-plus"></i> Add Counter
+        </button>
+        <button id="toggle-favorites" class="btn btn-secondary">
+          <i class="fas fa-star"></i> Favorites
+        </button>
+      </div>
+    </header>
+
+    <section class="app__content">
+      <div class="counters-container" id="counters-container">
+        <!-- Counters will be inserted here -->
+      </div>
+      
+      <div class="empty-state" id="empty-state">
+        <i class="fas fa-calculator fa-3x"></i>
+        <h2>No counters yet</h2>
+        <p>Create your first counter to get started!</p>
+        <button class="btn btn-primary" onclick="app.addNewCounter()">
+          <i class="fas fa-plus"></i> Add Counter
+        </button>
+      </div>
+    </section>
+
+    <footer class="app__footer">
+      <div class="stats">
+        <span id="counter-count">0 counters</span>
+        <span id="favorite-count">0 favorites</span>
+      </div>
+      <div class="actions">
+        <button id="reset-all" class="btn btn-danger">
+          <i class="fas fa-redo"></i> Reset All
+        </button>
+        <button id="export-data" class="btn btn-secondary">
+          <i class="fas fa-download"></i> Export
+        </button>
+      </div>
+    </footer>
+  </main>
+
+  <!-- Counter Template -->
+  <template id="counter-template">
+    <div class="counter" draggable="true">
+      <div class="counter__header">
+        <div class="counter__title-section">
+          <input type="text" class="counter__title" placeholder="Counter title" maxlength="50">
+          <button class="counter__favorite" title="Toggle favorite">
+            <i class="far fa-star"></i>
+          </button>
+        </div>
+        <button class="counter__delete" title="Delete counter">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+      
+      <div class="counter__value-section">
+        <div class="counter__value">0</div>
+        <div class="counter__controls">
+          <button class="counter__btn counter__decrement" title="Decrement">
+            <i class="fas fa-minus"></i>
+          </button>
+          <button class="counter__btn counter__reset" title="Reset">
+            <i class="fas fa-redo"></i>
+          </button>
+          <button class="counter__btn counter__increment" title="Increment">
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div class="counter__meta">
+        <span class="counter__created">Created: just now</span>
+        <span class="counter__current-indicator" title="Current counter">
+          <i class="fas fa-dot-circle"></i> Current
+        </span>
+      </div>
+    </div>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
